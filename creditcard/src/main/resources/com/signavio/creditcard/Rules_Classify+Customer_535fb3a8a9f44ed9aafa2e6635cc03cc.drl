@@ -1,0 +1,221 @@
+package com.signavio.creditcard 
+
+import java.time.OffsetTime
+import java.util.Arrays
+import org.slf4j.Logger
+import java.text.DecimalFormat
+import org.slf4j.LoggerFactory
+import com.signavio.dmn.formulae.v3.IndexedListElement
+import java.util.ArrayList
+import java.util.HashSet
+import java.math.BigDecimal
+import java.util.List
+import java.time.OffsetDateTime
+import com.signavio.dmn.formulae.v3.DmnHierarchyFormulae
+import java.time.LocalDate
+import com.signavio.dmn.formulae.v3.DmnFormulae
+import java.util.Collections
+import java.math.RoundingMode
+
+global String modelId
+global Integer revisionNumber
+global List $allMessages
+global Logger $logger
+
+declare  DmnFormulae 
+end
+
+declare  DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc  extends  DmnFormulae  
+end
+
+declare  DmnHierarchyFormulae 
+end
+
+declare  IndexedListElement 
+end
+
+declare  Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc 
+    creditScore : BigDecimal  
+end
+
+declare  ClassifyCustomer  extends  IndexedListElement  
+    classifyCustomer : String  
+end
+
+declare  ClassifyCustomer_Output 
+    classifyCustomer : String  
+end
+
+declare  AnnotationItem_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc 
+    decision : String  
+    annotationName : String  
+    ruleName : String  
+    category : AnnotationCategory_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc  
+    message : String  
+    timestamp : OffsetDateTime  
+end
+
+declare enum AnnotationCategory_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc
+	INFO,CRITICAL,REGULATION,POLICY;
+end
+
+rule "initialize_version_info_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc"
+    no-loop true
+    salience 1000
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+then
+	drools.getWorkingMemory().setGlobal("modelId", "535fb3a8a9f44ed9aafa2e6635cc03cc");
+	drools.getWorkingMemory().setGlobal("revisionNumber", 3);
+end
+
+rule "initialize_annotations_list_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc"
+    no-loop true
+    salience 1000
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+then
+	drools.getWorkingMemory().setGlobal("$allMessages", new ArrayList());
+end
+
+rule "add_formulae_to_memory_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc"
+    no-loop true
+    salience 1000
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+then
+	insert(new DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc());
+	insert(new DmnHierarchyFormulae());
+end
+
+rule "init_logger_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc"
+    no-loop true
+    salience 1000
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+then
+	drools.getWorkingMemory().setGlobal("$logger", LoggerFactory.getLogger("DroolsExecution"));
+end
+
+rule "log_input_rule_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc"
+    no-loop true
+    salience 999
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+then
+	$logger.info($input.toString());
+end
+
+rule "classifyCustomer_rule_1"
+    no-loop true
+    //decision:  classifyCustomer
+    salience 1
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    ClassifyCustomer_Output(  )   ) 
+    not( 
+    ClassifyCustomer(  )   ) 
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    eval( $F.nullSafeEval(($F.lessThan($input.getCreditScore(), BigDecimal.valueOf(2.0)))) ) 
+then
+	ClassifyCustomer $classifyCustomer = new ClassifyCustomer();
+	$classifyCustomer.setClassifyCustomer("White");
+	$classifyCustomer.setIndex(0);
+	insert($classifyCustomer);
+end
+
+rule "classifyCustomer_rule_2"
+    no-loop true
+    //decision:  classifyCustomer
+    salience 1
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    ClassifyCustomer_Output(  )   ) 
+    not( 
+    ClassifyCustomer(  )   ) 
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    eval( $F.nullSafeEval($F.and($F.lessThanOrEqualTo(BigDecimal.valueOf(2.0), $input.getCreditScore()), $F.lessThanOrEqualTo($input.getCreditScore(), BigDecimal.valueOf(3.0)))) ) 
+then
+	ClassifyCustomer $classifyCustomer = new ClassifyCustomer();
+	$classifyCustomer.setClassifyCustomer("Silver");
+	$classifyCustomer.setIndex(1);
+	insert($classifyCustomer);
+end
+
+rule "classifyCustomer_rule_3"
+    no-loop true
+    //decision:  classifyCustomer
+    salience 1
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    ClassifyCustomer_Output(  )   ) 
+    not( 
+    ClassifyCustomer(  )   ) 
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    eval( $F.nullSafeEval(($F.greaterThan($input.getCreditScore(), BigDecimal.valueOf(3.0)))) ) 
+then
+	ClassifyCustomer $classifyCustomer = new ClassifyCustomer();
+	$classifyCustomer.setClassifyCustomer("Gold");
+	$classifyCustomer.setIndex(2);
+	insert($classifyCustomer);
+end
+
+rule "classifyCustomer_singleResultOutput"
+    no-loop true
+    //decision:  classifyCustomer
+    salience 0
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    ClassifyCustomer_Output(  )   ) 
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $classifyCustomer : ClassifyCustomer(  )  
+then
+	ClassifyCustomer_Output $classifyCustomer_Output = new ClassifyCustomer_Output();
+	$classifyCustomer_Output.setClassifyCustomer($classifyCustomer.getClassifyCustomer());
+	retract($classifyCustomer);
+	insert($classifyCustomer_Output);
+end
+
+rule "classifyCustomer_emptyResultFallBack"
+    no-loop true
+    //decision:  classifyCustomer
+    salience -1
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    ClassifyCustomer_Output(  )   ) 
+    $input : Input_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+then
+	ClassifyCustomer_Output $classifyCustomer_Output = new ClassifyCustomer_Output();
+	$classifyCustomer_Output.setClassifyCustomer(null);
+	insert($classifyCustomer_Output);
+end
+
+rule "classifyCustomer_cleanup_rule_output"
+    no-loop true
+    //decision:  classifyCustomer
+    salience 1
+    ruleflow-group 'classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc'
+when
+    $F : DmnFormulaeLocal_classifycustomer_535fb3a8a9f44ed9aafa2e6635cc03cc(  )  
+    $H : DmnHierarchyFormulae(  )  
+    ClassifyCustomer_Output(  )  
+    $classifyCustomer : ClassifyCustomer(  )  
+then
+	retract($classifyCustomer);
+end
