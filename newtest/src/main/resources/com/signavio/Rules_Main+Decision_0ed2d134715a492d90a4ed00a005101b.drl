@@ -1,0 +1,200 @@
+package com.signavio 
+
+import java.time.OffsetTime
+import java.util.Arrays
+import org.slf4j.Logger
+import java.text.DecimalFormat
+import org.slf4j.LoggerFactory
+import com.signavio.dmn.formulae.v3.IndexedListElement
+import java.util.ArrayList
+import java.util.HashSet
+import java.math.BigDecimal
+import java.util.List
+import java.time.OffsetDateTime
+import com.signavio.dmn.formulae.v3.DmnHierarchyFormulae
+import java.time.LocalDate
+import com.signavio.dmn.formulae.v3.DmnFormulae
+import java.util.Collections
+import java.math.RoundingMode
+
+global String modelId
+global Integer revisionNumber
+global List $allMessages
+global Logger $logger
+
+declare  DmnFormulae 
+end
+
+declare  DmnFormulaeLocal_maindecision  extends  DmnFormulae  
+end
+
+declare  DmnHierarchyFormulae 
+end
+
+declare  IndexedListElement 
+end
+
+declare  Input_maindecision 
+    input : String  
+end
+
+declare  MainDecision  extends  IndexedListElement  
+    mainDecision : Boolean  
+end
+
+declare  MainDecision_Output 
+    mainDecision : Boolean  
+end
+
+declare  AnnotationItem_maindecision 
+    decision : String  
+    annotationName : String  
+    ruleName : String  
+    category : AnnotationCategory_maindecision  
+    message : String  
+    timestamp : OffsetDateTime  
+end
+
+declare enum AnnotationCategory_maindecision
+	INFO,CRITICAL,REGULATION,POLICY;
+end
+
+rule "initialize_version_info_maindecision"
+    no-loop true
+    salience 1000
+    ruleflow-group 'maindecision'
+when
+then
+	drools.getWorkingMemory().setGlobal("modelId", "0ed2d134715a492d90a4ed00a005101b");
+	drools.getWorkingMemory().setGlobal("revisionNumber", 1);
+end
+
+rule "initialize_annotations_list_maindecision"
+    no-loop true
+    salience 1000
+    ruleflow-group 'maindecision'
+when
+then
+	drools.getWorkingMemory().setGlobal("$allMessages", new ArrayList());
+end
+
+rule "add_formulae_to_memory_maindecision"
+    no-loop true
+    salience 1000
+    ruleflow-group 'maindecision'
+when
+then
+	insert(new DmnFormulaeLocal_maindecision());
+	insert(new DmnHierarchyFormulae());
+end
+
+rule "init_logger_maindecision"
+    no-loop true
+    salience 1000
+    ruleflow-group 'maindecision'
+when
+then
+	drools.getWorkingMemory().setGlobal("$logger", LoggerFactory.getLogger("DroolsExecution"));
+end
+
+rule "log_input_rule_maindecision"
+    no-loop true
+    salience 999
+    ruleflow-group 'maindecision'
+when
+    $input : Input_maindecision(  )  
+then
+	$logger.info($input.toString());
+end
+
+rule "mainDecision_rule_1"
+    no-loop true
+    //decision:  mainDecision
+    salience 1
+    ruleflow-group 'maindecision'
+when
+    $F : DmnFormulaeLocal_maindecision(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    MainDecision_Output(  )   ) 
+    not( 
+    MainDecision(  )   ) 
+    $input : Input_maindecision(  )  
+    eval( $F.nullSafeEval($F.equals($input.getInput(), "True")) ) 
+then
+	MainDecision $mainDecision = new MainDecision();
+	$mainDecision.setMainDecision(true);
+	$mainDecision.setIndex(0);
+	insert($mainDecision);
+end
+
+rule "mainDecision_rule_2"
+    no-loop true
+    //decision:  mainDecision
+    salience 1
+    ruleflow-group 'maindecision'
+when
+    $F : DmnFormulaeLocal_maindecision(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    MainDecision_Output(  )   ) 
+    not( 
+    MainDecision(  )   ) 
+    $input : Input_maindecision(  )  
+    eval( $F.nullSafeEval($F.equals($input.getInput(), "False")) ) 
+then
+	MainDecision $mainDecision = new MainDecision();
+	$mainDecision.setMainDecision(false);
+	$mainDecision.setIndex(1);
+	insert($mainDecision);
+end
+
+rule "mainDecision_singleResultOutput"
+    no-loop true
+    //decision:  mainDecision
+    salience 0
+    ruleflow-group 'maindecision'
+when
+    $F : DmnFormulaeLocal_maindecision(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    MainDecision_Output(  )   ) 
+    $input : Input_maindecision(  )  
+    $mainDecision : MainDecision(  )  
+then
+	MainDecision_Output $mainDecision_Output = new MainDecision_Output();
+	$mainDecision_Output.setMainDecision($mainDecision.getMainDecision());
+	retract($mainDecision);
+	insert($mainDecision_Output);
+end
+
+rule "mainDecision_emptyResultFallBack"
+    no-loop true
+    //decision:  mainDecision
+    salience -1
+    ruleflow-group 'maindecision'
+when
+    $F : DmnFormulaeLocal_maindecision(  )  
+    $H : DmnHierarchyFormulae(  )  
+    not( 
+    MainDecision_Output(  )   ) 
+    $input : Input_maindecision(  )  
+then
+	MainDecision_Output $mainDecision_Output = new MainDecision_Output();
+	$mainDecision_Output.setMainDecision(null);
+	insert($mainDecision_Output);
+end
+
+rule "mainDecision_cleanup_rule_output"
+    no-loop true
+    //decision:  mainDecision
+    salience 1
+    ruleflow-group 'maindecision'
+when
+    $F : DmnFormulaeLocal_maindecision(  )  
+    $H : DmnHierarchyFormulae(  )  
+    MainDecision_Output(  )  
+    $mainDecision : MainDecision(  )  
+then
+	retract($mainDecision);
+end
